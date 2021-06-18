@@ -24,7 +24,7 @@ def validate_battlefield(field)
       && flat[i] == flat[i+1] \
       && flat[i+1] == flat[i+2] \
       && flat[i+2] == flat[i+3]
-      return false if touched_edge(ship_width, true, i, flat)
+      return false if touched_edge(ship_width, horizontal, i, flat)
       return false if i < 87 && \
         flat[i+10] + flat[i+11] + flat[i+12] + flat[i+13] > 0
       ship += 1
@@ -40,7 +40,7 @@ def validate_battlefield(field)
     elsif i%10 < 8 && i < 98 && 1 == flat[i] \
       && flat[i] == flat[i+1] \
       && flat[i+1] == flat[i+2]
-      return false if touched_edge(cruiser_width, true, i, flat)
+      return false if touched_edge(cruiser_width, horizontal, i, flat)
       return false if i < 88 && \
       flat[i+10] + flat[i+11] + flat[i+12] > 0
       cruiser += 1
@@ -54,7 +54,7 @@ def validate_battlefield(field)
       flat[i] = flat[i+10] = flat[i+20] = 0
     elsif i%10 < 9 && i < 99 && 1 == flat[i] \
       && flat[i] == flat[i+1]
-      return false if touched_edge(destroyer_width, true, i, flat)
+      return false if touched_edge(destroyer_width, horizontal, i, flat)
       return false if i < 89 && \
       flat[i+10] + flat[i+11] > 0
       destroyer += 1
@@ -66,7 +66,7 @@ def validate_battlefield(field)
       destroyer += 1
       flat[i] = flat[i+10] = 0
     elsif 1 == flat[i]
-      return false if touched_edge(sub_width, true, i, flat)
+      return false if touched_edge(sub_width, horizontal, i, flat)
       sub += 1
       
       flat[i] = 0
