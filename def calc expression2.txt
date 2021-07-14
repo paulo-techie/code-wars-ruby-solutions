@@ -1,0 +1,120 @@
+def calc expression  
+  a, tempdiv, prevdiv = '', '', ''
+  stack, float, brackets = [], false, false
+
+  expression = expression.gsub(/\s/, '')
+  b = expression.length
+  p expression
+  expression.chars.each_with_index do |i,o|
+ p [a, i, brackets, b, o, expression.length-1]
+    next if brackets && o < b
+    brackets = false
+    if o == expression.length-1
+      a = a.to_s
+      if a.is_a? String
+        a += i
+      else 
+        a = a.to_s
+      end
+      if stack[-1] == '*' && a != ''
+        stack.pop
+        stack.push(a.to_i*stack.pop)  if !float
+        stack.push(a.to_f*stack.pop)  if float
+      elsif stack[-1] == '/' && a != ''
+        stack.pop
+        stack.push(stack.pop/a.to_i)  if !float
+        stack.push(stack.pop/a.to_f)  if float
+      elsif stack[-1] == '-' && a != ''
+        p stack.pop
+        a = a.to_f * -1 if float
+        a = a.to_i * -1 if !float
+        if stack[-1] == '*'
+          stack.pop
+          stack.push(a.to_f * stack.pop) if float
+          stack.push(a.to_i * stack.pop) if !float
+        elsif stack[-1] == '/'
+          stack.pop
+          stack.push(stack.pop/a.to_f)  if float
+          stack.push(stack.pop/a.to_i)  if !float
+        elsif stack[-1] == '-'
+          stack.pop
+          stack.push(a.to_f * -1) if float
+          stack.push(a.to_i * -1) if !float 
+        else
+          stack.push(a.to_f)  if float
+          stack.push(a.to_i)  if !float
+        end
+      else
+        stack.push(a.to_i) if a != '' && !float
+        stack.push(a.to_f) if a != '' &&  float
+      end
+    elsif i == ')'
+      next
+    elsif i == '('
+      p i
+      next if expression[o+1] == '('
+      brackets = true
+      p i
+      # use recursion to deal with those in brackets
+      b = expression[o..expression.length].index(')') ? o + expression[o..expression.length].index(')') : expression.length
+      a = calc(expression.chars[(o+1)..(b-1)].join)
+      p a
+      next
+    elsif i == '.'
+      float = true
+      a += i
+    elsif i == '+' || i == '/' || i == '*' || i == '-'
+      if !a.is_a? String
+        a = a.to_s
+      end
+      if stack[-1] == '*' && a != ''
+        stack.pop
+        stack.push(a.to_i*stack.pop)  if !float
+        stack.push(a.to_f*stack.pop)  if float
+      elsif stack[-1] == '/' && a != ''
+        stack.pop
+        stack.push(stack.pop/a.to_f)  if !float
+        stack.push(stack.pop/a.to_f)  if float
+      elsif stack[-1] == '-' && a != ''
+        stack.pop
+        a = a.to_f * -1 if float
+        a = a.to_i * -1 if !float
+        if stack[-1] == '*'
+          stack.pop
+          stack.push(a.to_f * stack.pop) if float
+          stack.push(a.to_i * stack.pop) if !float
+        elsif stack[-1] == '/'
+          stack.pop
+          stack.push(stack.pop/a.to_f)  if float
+          stack.push(stack.pop/a.to_i)  if !float
+        elsif stack[-1] == '-'
+          stack.pop
+          stack.push(a.to_f * -1) if float
+          stack.push(a.to_i * -1) if !float 
+        else
+          stack.push(a.to_f)  if float
+          stack.push(a.to_i)  if !float
+        end
+      else
+        stack.push(a.to_i) if a != '' && !float
+        stack.push(a.to_f) if a != '' &&  float
+      end
+      float = false
+      a = ''
+      if i == '-'
+        if stack[-1] && stack[-1] == '-'
+          stack.pop
+        else
+          stack.push(i)
+        end
+      elsif i == '*' || i == '/'
+        stack.push(i)
+      end
+    else
+      a += i
+    end
+  end
+  p stack
+  stack.reduce(:+)
+end
+
