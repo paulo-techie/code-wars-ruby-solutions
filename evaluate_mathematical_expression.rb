@@ -1,38 +1,72 @@
 require 'colorize'
 
-def calc expression  
-  expression = expression.gsub(/\s/, '')
-  expression = remove_brackets(expression)
-  process(expression).reduce(:+)
+def calc expression
+  stack = []
+  process(remove_brackets(expression.gsub(/\s/, ''))).each{|a| load_stack(stack, a)}
+  stack.reduce(:+)
 end
 
-def load_stack(tempstack, a)
-  if ['+', '-', '*', '/'].include?(a)
-    if a == '-' && tempstack[-1] && tempstack[-1] == '-'
-      tempstack.pop
-      return tempstack
+def process expression  
+  a, stack = '', []
+  b = expression.length
+  expression.chars.each_with_index do |i,o|
+    if o == expression.length-1
+      a += i
+      stack = load_stack(stack, a.to_f) if a != ''
+    elsif i == '.'
+      a += i
+    elsif ['+', '-', '*', '/'].include?(i)
+      if !a.is_a? String
+        a = a.to_s
+      end
+      stack = load_stack(stack, a.to_f) if a != ''
+      a = ''
+      if i == '-'
+        if stack[-1] && stack[-1] == '-'
+          stack.pop
+          i = '+'
+        else
+          stack.push(i)
+        end
+      elsif i == '*' || i == '/'
+        stack.push(i)
+      end
+    else
+      a += i
     end
-    tempstack.push(a)
-  elsif tempstack[-1] == '*' && tempstack[-2] && !(tempstack[-2].is_a?(String))
-    tempstack.pop
-    tempstack.push(tempstack.pop * a.to_f)
-  elsif tempstack[-1] == '-'
-    tempstack.pop
-    tempstack.push(a.to_f * -1) # = load_stack(tempstack, a)  # recursion
-  elsif tempstack[-1] == '/' && tempstack[-2] && !(tempstack[-2].is_a?(String))
-    tempstack.pop
-    tempstack.push(tempstack.pop / a.to_f)
-  elsif tempstack[-1] == '+' && tempstack[-2] && !(tempstack[-2].is_a?(String))
-    tempstack.pop
-    tempstack.push(tempstack.pop + a.to_f)
-  else
-    tempstack.push(a.to_f)
   end
+  stack
+end
+
+def load_stack tempstack, a
+      if ['+', '-', '*', '/'].include?(a)
+        if a == '-' && tempstack[-1] && tempstack[-1] == '-'
+          tempstack.pop
+          tempstack.push('+')
+          return tempstack
+        end
+        tempstack.push(a)
+      elsif tempstack[-1] == '*' && tempstack[-2] && !(tempstack[-2].is_a?(String))
+        tempstack.pop
+        tempstack.push(tempstack.pop*a.to_f)
+      elsif tempstack[-1] == '-'
+        tempstack.pop
+        tempstack.push((-1)*a.to_f)
+      elsif tempstack[-1] == '/' && tempstack[-2] && !(tempstack[-2].is_a?(String))
+        tempstack.pop
+        tempstack.push(tempstack.pop/a.to_f)
+      elsif tempstack[-1] == '+' && tempstack[-2] && !(tempstack[-2].is_a?(String))
+        tempstack.pop
+        tempstack.push(tempstack.pop+a.to_f)
+      else
+        tempstack.push(a.to_f)
+      end
   tempstack
 end
 
 def remove_brackets expression
   str = expression # make a copy of expresion to work with
+  brackets = true
   tempstack = []
   i = 0 # starting index
   loop do
@@ -41,36 +75,13 @@ def remove_brackets expression
     brackets = false unless b && c
     break if brackets == false
     result = (str[(b-c+1)..(b-1)])
-    process(result).each { |a| tempstack = load_stack(tempstack, a) }
-    if tempstack.any?{|o| o.is_a?(String)}
-      str[(b-c)..b] = tempstack.join
-    else
-      str[(b-c)..b] = tempstack.reduce(:+).to_s
+    process(result).each do |a|
+      tempstack = load_stack(tempstack, a)
     end
+    str[(b-c)..b] = tempstack.reduce(:+).to_s
     tempstack = []
   end
   str
-end
-
-def process(expression)
-  c_arr = []
-  a = ''
-  expression.chars.each do |c|
-    if ['+', '-', '*', '/'].include?(c)
-      c_arr << a if a != ''
-      if c_arr[-1] && c_arr[-1] == '-' and c == '-'
-        c_arr.pop
-        next
-      end
-      c_arr << c
-      a = ''
-      next
-    end
-    a += c
-  end
-  c_arr << a 
-  c_arr.each {}
-  c_arr
 end
 
 tests = [
