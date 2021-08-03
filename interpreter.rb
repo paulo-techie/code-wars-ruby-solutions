@@ -8,11 +8,11 @@ class Interpreter
   def interpret(expr)
     return expr if !expr || expr == ""
     return @vars[expr] if @vars[expr] && expr.length == 1
-    # if @vars[expr]
-    #   return @vars[expr]
-    # else
-    #   raise 'error'
-    # end if expr.length == 1
+    if @vars[expr]
+      return @vars[expr]
+    else
+      raise Exception.new 'error'
+    end if expr.length == 1
     arr = expr.gsub(/\s/, '').split('=')
     x = expr.index('=')
     expr = expr[(x+1)..-1] if x
